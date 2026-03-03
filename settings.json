@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allowedActions": [
+      "read",
+      "write",
+      "execute"
+    ],
+    "deniedActions": [],
+    "allowedPaths": [
+      "./"
+    ],
+    "deniedPaths": [
+      ".env",
+      ".env.*",
+      "secrets.json",
+      "credentials.json",
+      ".aws/"
+    ],
+    "allowExternalRequests": false,
+    "allowShellCommands": true,
+    "allowFileCreation": true,
+    "allowFileDeletion": false,
+    "allowGitOperations": true
+  },
+  "project": {
+    "name": "new-project-template",
+    "version": "0.1.0",
+    "description": "Template repository for future projects"
+  }
+}
