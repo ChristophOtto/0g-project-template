@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# post-commit hook: logs AI-assisted changes for audit trail
+# Creates/appends to .ai-audit.log (gitignored)
+
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+COMMIT_HASH=$(git rev-parse HEAD)
+COMMIT_MSG=$(git log -1 --pretty=%s)
+CHANGED_FILES=$(git diff-tree --no-commit-id -r --name-only HEAD | tr '\n' ', ' | sed 's/,$//')
+
+# Only log if the AI_ASSISTED env var is set, or if commit message contains [ai]
+if [ "${AI_ASSISTED:-}" = "1" ] || echo "$COMMIT_MSG" | grep -qi '\[ai\]'; then
+  LOG_ENTRY="[$TIMESTAMP] $COMMIT_HASH | $COMMIT_MSG | files: $CHANGED_FILES"
+  echo "$LOG_ENTRY" >> .ai-audit.log
+  echo "📝 AI audit log updated: .ai-audit.log"
+fi
+
+exit 0

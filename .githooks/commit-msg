@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# commit-msg hook: enforces Conventional Commits format
+# See: https://www.conventionalcommits.org/
+
+COMMIT_MSG_FILE="$1"
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Allow merge commits, revert commits, and fixups
+if echo "$COMMIT_MSG" | grep -qE '^(Merge|Revert|fixup!|squash!)'; then
+  exit 0
+fi
+
+PATTERN='^(feat|fix|docs|style|refactor|perf|test|chore|build|ci|revert)(\(.+\))?: .{1,72}$'
+
+if ! echo "$COMMIT_MSG" | grep -qE "$PATTERN"; then
+  echo ""
+  echo "✗ BLOCKED: Commit message does not follow Conventional Commits format."
+  echo ""
+  echo "  Expected format:"
+  echo "    <type>(<optional scope>): <short description>"
+  echo ""
+  echo "  Valid types:"
+  echo "    feat     — new feature"
+  echo "    fix      — bug fix"
+  echo "    docs     — documentation only"
+  echo "    style    — formatting, no logic change"
+  echo "    refactor — code restructure, no feature/fix"
+  echo "    perf     — performance improvement"
+  echo "    test     — adding or fixing tests"
+  echo "    chore    — maintenance, tooling"
+  echo "    build    — build system changes"
+  echo "    ci       — CI/CD config changes"
+  echo "    revert   — reverting a previous commit"
+  echo ""
+  echo "  Examples:"
+  echo "    feat: add user authentication"
+  echo "    fix(auth): resolve token expiry bug"
+  echo "    chore: update dependencies"
+  echo ""
+  echo "  Your message: \"$COMMIT_MSG\""
+  echo ""
+  exit 1
+fi
+
+exit 0

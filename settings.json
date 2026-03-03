@@ -20,11 +20,39 @@
     "allowShellCommands": true,
     "allowFileCreation": true,
     "allowFileDeletion": false,
-    "allowGitOperations": true
+    "allowGitOperations": true,
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(cat:*)",
+      "Bash(ls:*)",
+      "Edit(/src/**)"
+    ],
+    "deny": [
+      "Bash(npm install *)",
+      "Bash(npm uninstall *)",
+      "Bash(yarn add *)",
+      "Bash(pip install *)",
+      "Bash(rm *)",
+      "Bash(rm -rf *)",
+      "Bash(rmdir *)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(ssh *)",
+      "Bash(scp *)",
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(**/*credential*)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)"
+    ]
   },
   "project": {
-    "name": "new-project-template",
+    "name": "0g-prj-tmpl",
     "version": "0.1.0",
-    "description": "Template repository for future projects"
+    "description": "Template repository for future ai-assisted projects"
   }
 }

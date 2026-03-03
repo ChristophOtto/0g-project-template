@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# pre-push hook: scans full commit history for secrets before pushing
+# Runs on: git push
+
+set -euo pipefail
+
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo "🔍 Scanning commit history for secrets before push..."
+
+REMOTE="$1"
+URL="$2"
+
+# Read the list of refs being pushed
+while read LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
+  # Skip deletions
+  if [ "$LOCAL_SHA" = "0000000000000000000000000000000000000000" ]; then
+    continue
+  fi
+
+  # Determine range of commits to scan
+  if [ "$REMOTE_SHA" = "0000000000000000000000000000000000000000" ]; then
+    # New branch: scan all commits
+    RANGE="$LOCAL_SHA"
+    COMMITS=$(git log --pretty=format:"%H" "$RANGE")
+  else
+    # Existing branch: scan only new commits
+    COMMITS=$(git log --pretty=format:"%H" "$REMOTE_SHA..$LOCAL_SHA")
+  fi
+
+  SECRET_PATTERNS=(
+    'AKIA[0-9A-Z]{16}'
+    'ghp_[0-9a-zA-Z]{36}'
+    'sk_live_[0-9a-zA-Z]{24}'
+    'AIza[0-9A-Za-z\-_]{35}'
+    '-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----'
+    'password\s*=\s*["\x27][^"\x27]{8,}'
+    'api[_-]?key\s*=\s*["\x27][^"\x27]{8,}'
+    'aws[_-]?secret[_-]?access[_-]?key\s*=\s*[A-Za-z0-9/+=]{40}'
+    'github[_-]?token\s*=\s*["\x27][^"\x27]{36,}'
+  )
+
+  FOUND=0
+
+  for COMMIT in $COMMITS; do
+    # Get files in this commit
+    COMMIT_FILES=$(git diff-tree --no-commit-id -r --name-only "$COMMIT")
+    for FILE in $COMMIT_FILES; do
+      # Skip allowlisted files
+      if echo "$FILE" | grep -Eq '\.env\.example$|gitleaks\.toml$|\.github/workflows/.*\.yml$|^\.githooks/.*'; then
+        continue
+      fi
+
+      for PATTERN in "${SECRET_PATTERNS[@]}"; do
+        MATCH=$(git show "$COMMIT:$FILE" 2>/dev/null | grep -inE -- "$PATTERN" || true)
+        if [ -n "$MATCH" ]; then
+          echo -e "${RED}✗ BLOCKED: Possible secret found in commit ${YELLOW}$COMMIT${RED} (file: $FILE):${NC}"
+          echo "$MATCH" | head -3 | sed 's/^/  /'
+          FOUND=1
+        fi
+      done
+    done
+  done
+
+  if [ "$FOUND" -eq 1 ]; then
+    echo ""
+    echo -e "${RED}🚫 Push blocked. A secret was found in commit history.${NC}"
+    echo "   Use 'git filter-repo' or BFG to remove it before pushing."
+    exit 1
+  fi
+done
+
+echo "✅ No secrets found in commit history. Push proceeding."
+
+# ─── npm audit: check for known CVEs ─────────────────────────────────────────
+if [ -f "package.json" ]; then
+  echo "🔍 Running npm audit (CVE check)..."
+  if ! npm audit --audit-level=high --omit=dev 2>&1; then
+    echo ""
+    echo -e "${RED}🚫 Push blocked. High or critical CVEs found in dependencies.${NC}"
+    echo "   Run 'npm audit fix' to resolve, or review manually."
+    exit 1
+  fi
+  echo "✅ No high/critical CVEs found."
+fi
+
+exit 0

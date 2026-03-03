@@ -1,0 +1,14 @@
+# CODEOWNERS
+# Require human review for all changes — especially AI-generated ones.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global: all files require owner review
+* @your-github-username
+
+# AI configuration files — extra scrutiny
+settings.json @your-github-username
+CLAUDE.md @your-github-username
+AGENTS.md @your-github-username
+.githooks/ @your-github-username
+.github/ @your-github-username
+gitleaks.toml @your-github-username

@@ -30,3 +30,6 @@ credentials.json
 .aws/
 .npmrc
 .htpasswd
+
+# AI audit log (local only)
+.ai-audit.log

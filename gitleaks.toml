@@ -1,0 +1,30 @@
+title = "0g Project Template — Gitleaks Config"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+description = "Generic API key pattern"
+regex = '''(?i)(api[_-]?key|apikey)\s*[:=]\s*['\"]?[A-Za-z0-9_\-]{16,}['\"]?'''
+tags = ["key", "API"]
+
+[[rules]]
+id = "private-key-header"
+description = "Private key PEM header in file content"
+regex = '''-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----'''
+tags = ["key", "pem"]
+
+[allowlist]
+description = "Allowlisted paths and patterns"
+paths = [
+  '''.env\.example$''',
+  '''gitleaks\.toml$''',
+  '''SECURITY\.md$'''
+]
+regexes = [
+  '''EXAMPLE_API_KEY''',
+  '''your[_-]?key[_-]?here''',
+  '''<YOUR_''',
+  '''sk_test_'''
+]
