@@ -13,20 +13,23 @@ jobs:
   npm-audit:
     name: npm audit (CVE check)
     runs-on: ubuntu-latest
-    if: hashFiles('package-lock.json') != ''
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Node.js
+        if: hashFiles('package-lock.json') != ''
         uses: actions/setup-node@v4
         with:
           node-version: "lts/*"
+          cache: "npm"
 
       - name: Install dependencies
+        if: hashFiles('package-lock.json') != ''
         run: npm ci --ignore-scripts
 
       - name: Run npm audit
+        if: hashFiles('package-lock.json') != ''
         # Fail on high or critical severity CVEs
         run: npm audit --audit-level=high
 
