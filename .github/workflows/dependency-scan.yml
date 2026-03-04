@@ -13,6 +13,7 @@ jobs:
   npm-audit:
     name: npm audit (CVE check)
     runs-on: ubuntu-latest
+    if: hashFiles('package-lock.json') != ''
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
